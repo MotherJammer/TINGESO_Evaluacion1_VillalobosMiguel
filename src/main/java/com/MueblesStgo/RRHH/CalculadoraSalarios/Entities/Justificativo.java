@@ -4,24 +4,21 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "categorias")
-public class Categoria {
+@Table(name = "justificativo")
+public class Justificativo {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(unique = true, nullable = false)
-    private Long id_cat;
+    private Long id_justificativo;
 
-    private char letra;
-    private int sueldo_fijo_mensual;
+    private String motivo;
 
-    @OneToMany(mappedBy = "categoria")
-    private List<Empleado> empleados;
-
-
+    @ManyToOne
+    @JoinColumn(name = "id_empleado")
+    private Empleado empleado;
 }

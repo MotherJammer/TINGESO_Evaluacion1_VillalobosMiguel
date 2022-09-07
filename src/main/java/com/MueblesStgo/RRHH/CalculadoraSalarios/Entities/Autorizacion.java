@@ -4,24 +4,23 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.List;
+import java.util.Date;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "categorias")
-public class Categoria {
+@Table(name = "autorizacion_horas_extras")
+public class Autorizacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(unique = true, nullable = false)
-    private Long id_cat;
+    private Long id_auth;
 
-    private char letra;
-    private int sueldo_fijo_mensual;
+    private int horas_aprobadas;
+    private Date fecha_auth;
 
-    @OneToMany(mappedBy = "categoria")
-    private List<Empleado> empleados;
-
-
+    @ManyToOne
+    @JoinColumn(name = "id_empleado")
+    private Empleado empleado;
 }

@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -24,10 +25,16 @@ public class Empleado {
     private Date fecha_nac;
     private Date fecha_ing;
 
-    //Averiguar bien lo de las relaciones
-    /*
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_cat")
+    @ManyToOne
+    @JoinColumn(name="categoria")
     private Categoria categoria;
-     */
+
+    @OneToMany(mappedBy = "empleado")
+    private List<MarcaReloj> marcas_reloj;
+
+    @OneToMany(mappedBy = "empleado")
+    private List<Justificativo> justificativos;
+
+    @OneToMany(mappedBy = "empleado")
+    private List<Autorizacion> autorizaciones;
 }
