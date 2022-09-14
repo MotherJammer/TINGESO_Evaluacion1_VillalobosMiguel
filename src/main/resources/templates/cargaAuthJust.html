@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Inclusión de los estilos de Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT"
+          crossorigin="anonymous">
+    <title>Calculadora de Salarios</title>
+</head>
+<body>
+    <h1>MueblesStgo: Departamento de Recursos Humanos</h1>
+        <h2>2) Indicar autorizaciones y justificativos</h2>
+        <div class="container">
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Nombres</th>
+                        <th>Apellidos</th>
+                        <th>RUT</th>
+                        <th>Tiempo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="empleado:${empleados}">
+                        <td th:text="${empleado.nombre}"></td>
+                        <td th:text="${empleado.apellidos}"></td>
+                        <td th:text="${empleado.rut}"></td>
+                        <!-- <td th:text="${empelado.tiempo}"></td> -->
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+</body>
+</html>
