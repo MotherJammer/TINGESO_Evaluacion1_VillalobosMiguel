@@ -11,7 +11,7 @@
 </head>
 <body>
     <h1>MueblesStgo: Departamento de Recursos Humanos</h1>
-        <h2>2) Indicar autorizaciones y justificativos</h2>
+        <h2>Panel de empleados</h2>
         <div class="container">
             <table class="table">
                 <thead class="thead-dark">
@@ -19,7 +19,7 @@
                         <th>Nombres</th>
                         <th>Apellidos</th>
                         <th>RUT</th>
-                        <th>Tiempo</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,7 +27,11 @@
                         <td th:text="${empleado.nombre}"></td>
                         <td th:text="${empleado.apellidos}"></td>
                         <td th:text="${empleado.rut}"></td>
-                        <!-- <td th:text="${empelado.tiempo}"></td> -->
+                        <td>
+                            <div class="btn-group">
+                                <a class="btn btn-primary" href="#">Mostrar marcajes</a>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>

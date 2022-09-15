@@ -11,13 +11,21 @@
     <title>Calculadora de Salarios</title>
 </head>
 <body>
-    <h1>MueblesStgo: Departamento de Recursos Humanos</h1>
-        <h2>1) Carga de marcajes de turnos (DATA.TXT)</h2>
-        <div class="container">
-            <form action="/upload" method="post" enctype="multipart/form-data">
+<div class="container">
+    <div class="row">
+        <h1 class="p-2 text-center">MueblesStgo: Departamento de Recursos Humanos</h1>
+        <h2 class="p-2 text-center">1) Carga de marcajes de turnos (DATA.TXT)</h2>
+    </div>
+    <div class="row align-items-center">
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
                 <input type="file" class="form-control" name="marcajeTurnos">
-                <input type="submit" value="Subir">
-            </form>
-        </div>
+            </div>
+            <div class="d-grip gap-2 col-6 mx-auto">
+                <button type="submit" class="btn btn-primary">Subir</button>
+            </div>
+        </form>
+    </div>
+</div>
 </body>
 </html>

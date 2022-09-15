@@ -1,6 +1,7 @@
 package com.MueblesStgo.RRHH.CalculadoraSalarios.Services;
 
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.Empleado;
+import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.MarcaReloj;
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Repositories.EmpleadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,4 @@ public class EmpleadoService {
         return empleadoRepository.findAll();
     }
 
-    public List<Empleado> obtenerEmpleadosConMarcaje(){
-        return empleadoRepository.findAllEmpleadosWithMarcas();
-    }
 }
