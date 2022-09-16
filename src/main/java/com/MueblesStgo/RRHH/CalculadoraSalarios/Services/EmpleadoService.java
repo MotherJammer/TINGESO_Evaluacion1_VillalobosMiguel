@@ -18,4 +18,6 @@ public class EmpleadoService {
         return empleadoRepository.findAll();
     }
 
+    public Empleado findByRut(String rut) { return empleadoRepository.findByRut(rut);}
+
 }

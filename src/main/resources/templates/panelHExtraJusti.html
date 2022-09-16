@@ -20,20 +20,20 @@
     <div class="col p-2 align-items-center">
       <div class="horas extra">
         <h3 class="p-2 text-center">Ingreso de horas extra</h3>
-        <form action="/uploadAuth" method="post">
-          <div class="mb-3">
+        <form th:action="@{/uploadAuth}" th:object="${autorizacion}" method="post">
+          <div class="form-group mb-3">
             <label for="fecha_auth" class="form-label">Fecha de autorización</label>
-            <input type="date" class="form-control" id="fecha_auth">
+            <input type="date" th:field="*{fecha_auth}" class="form-control" id="fecha_auth">
           </div>
-          <div class="mb-3">
-            <label for="horasAprobadas" class="form-label">Cantidad de horas aprobadas</label>
-            <input type="number" class="form-control" id="horasAprobadas">
+          <div class="form-group mb-3">
+            <label for="horas_aprobadas" class="form-label">Cantidad de horas aprobadas</label>
+            <input type="number" th:field="*{horas_aprobadas}" class="form-control" id="horas_aprobadas">
           </div>
-          <div class="mb-3">
+          <div class="form-group mb-3">
             <label for="rutEmpleadoAuth" class="form-label">Rut del empleado autorizado</label>
-            <input type="text" class="form-control" id="rutEmpleadoAuth">
+            <input type="text" th:field="*{rut_empleado_auth}" class="form-control" id="rutEmpleadoAuth">
           </div>
-          <div class="d-grip gap-2 col-6 mx-auto">
+          <div>
             <button type="submit" class="btn btn-primary">Ingresar hora extra</button>
           </div>
         </form>
@@ -44,6 +44,10 @@
         <h3 class="p-2 text-center">Ingreso de justificativos</h3>
         <form action="/uploadJustificativo" method="post">
           <div class="mb-3">
+            <label for="fecha_justi" class="form-label">Fecha de la inasistencia</label>
+            <input type="date" class="form-control" id="fecha_justi">
+          </div>
+          <div class="mb-3">
             <label for="motivoJustificativo" class="form-label">Motivo de justificación</label>
             <input type="text" class="form-control" id="motivoJustificativo">
           </div>
@@ -51,7 +55,7 @@
             <label for="rutEmpleadoJusti" class="form-label">Rut del empleado justificado</label>
             <input type="text" class="form-control" id="rutEmpleadoJusti">
           </div>
-          <div class="d-grip gap-2 col-6 mx-auto">
+          <div>
             <button type="submit" class="btn btn-primary">Ingresar justificativo</button>
           </div>
         </form>

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -16,6 +17,7 @@ public class Justificativo {
     @Column(unique = true, nullable = false)
     private Long id_justificativo;
 
+    private Date fecha_justi;
     private String motivo;
 
     @ManyToOne
