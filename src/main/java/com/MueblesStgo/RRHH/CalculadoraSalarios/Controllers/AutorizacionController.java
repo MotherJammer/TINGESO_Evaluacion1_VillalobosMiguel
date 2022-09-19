@@ -2,13 +2,10 @@ package com.MueblesStgo.RRHH.CalculadoraSalarios.Controllers;
 
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.Autorizacion;
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.Empleado;
-import com.MueblesStgo.RRHH.CalculadoraSalarios.Repositories.AutorizacionRepository;
-import com.MueblesStgo.RRHH.CalculadoraSalarios.Repositories.EmpleadoRepository;
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Services.AutorizacionService;
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Services.EmpleadoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller

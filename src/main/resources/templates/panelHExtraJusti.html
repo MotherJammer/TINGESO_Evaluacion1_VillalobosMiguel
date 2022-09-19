@@ -42,18 +42,18 @@
     <div class="col p-2 align-items-center">
       <div class="justificativo">
         <h3 class="p-2 text-center">Ingreso de justificativos</h3>
-        <form action="/uploadJustificativo" method="post">
-          <div class="mb-3">
+        <form th:action="@{/uploadJustificativo}" th:object="${justificativo}" method="post">
+          <div class="form-group mb-3">
             <label for="fecha_justi" class="form-label">Fecha de la inasistencia</label>
-            <input type="date" class="form-control" id="fecha_justi">
+            <input type="date" th:field="*{fecha_justi}" class="form-control" id="fecha_justi">
           </div>
-          <div class="mb-3">
+          <div class="form-group mb-3">
             <label for="motivoJustificativo" class="form-label">Motivo de justificación</label>
-            <input type="text" class="form-control" id="motivoJustificativo">
+            <input type="text" th:field="*{motivo}" class="form-control" id="motivoJustificativo">
           </div>
-          <div class="mb-3">
+          <div class="form-group mb-3">
             <label for="rutEmpleadoJusti" class="form-label">Rut del empleado justificado</label>
-            <input type="text" class="form-control" id="rutEmpleadoJusti">
+            <input type="text" th:field="*{rut_empleado_justi}" class="form-control" id="rutEmpleadoJusti">
           </div>
           <div>
             <button type="submit" class="btn btn-primary">Ingresar justificativo</button>
