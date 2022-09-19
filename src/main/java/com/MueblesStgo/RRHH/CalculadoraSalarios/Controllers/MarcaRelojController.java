@@ -24,6 +24,6 @@ public class MarcaRelojController {
     public String upload(@RequestParam("marcajeTurnos")MultipartFile file) {
         marcaRelojService.save(file);
         marcaRelojService.readData();
-        return "panelHExtraJusti";
+        return "redirect:/HExtraJusti";
     }
 }
