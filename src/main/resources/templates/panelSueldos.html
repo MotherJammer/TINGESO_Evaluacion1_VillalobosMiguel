@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Inclusión de los estilos de Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT"
+        crossorigin="anonymous">
+  <title>Calculadora de Salarios</title>
+</head>
+<body>
+<div class="container">
+  <div class="row">
+    <h1 class="p-2 text-center">MueblesStgo: Departamento de Recursos Humanos</h1>
+    <h2 class="p-2 text-center">Planilla de salarios</h2>
+  </div>
+  <div class="row p-2">
+    <table class="table">
+      <thead class="thead-dark">
+      <tr>
+        <th>RUT</th>
+        <th>Apellidos</th>
+        <th>Nombres</th>
+        <th>Categoría</th>
+        <th>Años de servicio</th>
+        <th>Sueldo fijo mensual</th>
+        <th>Bonificación por años de servicio</th>
+        <th>Pago por horas extras</th>
+        <th>Descuentos de atrasos e ausencias</th>
+        <th>Sueldo bruto</th>
+        <th>Cotización previsional</th>
+        <th>Cotización salud</th>
+        <th>Monto sueldo final</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="sueldo:${sueldos}">
+        <td th:text="${sueldo.rut}"></td>
+        <td th:text="${sueldo.apellidos}"></td>
+        <td th:text="${sueldo.nombre}"></td>
+        <td th:text="${sueldo.categoria}"></td>
+        <td th:text="${sueldo.tiempoServicio}"></td>
+        <td th:text="${#numbers.formatCurrency(sueldo.sueldoFijoMensual)}"></td>
+        <td th:text="${#numbers.formatCurrency(sueldo.bonificacionTiempoServicio)}"></td>
+        <td th:text="${#numbers.formatCurrency(sueldo.bonificacionHorasExtra)}"></td>
+        <td th:text="${#numbers.formatCurrency(sueldo.descuentosAtrasoInasistencias)}"></td>
+        <td th:text="${#numbers.formatCurrency(sueldo.sueldoBruto)}"></td>
+        <td th:text="${#numbers.formatCurrency(sueldo.cotizacionPrevisional)}"></td>
+        <td th:text="${#numbers.formatCurrency(sueldo.cotizacionSalud)}"></td>
+        <td th:text="${#numbers.formatCurrency(sueldo.sueldoFinal)}"></td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

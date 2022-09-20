@@ -74,4 +74,14 @@ public class MarcaRelojService {
             throw new RuntimeException(e);
         }
     }
+
+    public MarcaReloj obtenerPrimeraMarca() {
+        List<MarcaReloj> marcasIngresadas = marcaRelojRepository.findAll();
+        return marcasIngresadas.get(0);
+    }
+
+    public MarcaReloj obtenerUltimaMarca() {
+        List<MarcaReloj> marcasIngresadas = marcaRelojRepository.findAll();
+        return marcasIngresadas.get(marcasIngresadas.size() - 1);
+    }
 }

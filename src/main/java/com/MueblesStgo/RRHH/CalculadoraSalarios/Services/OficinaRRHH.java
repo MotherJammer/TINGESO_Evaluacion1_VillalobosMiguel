@@ -2,15 +2,14 @@ package com.MueblesStgo.RRHH.CalculadoraSalarios.Services;
 
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.Autorizacion;
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.Empleado;
+import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.Justificativo;
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.MarcaReloj;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -92,22 +91,26 @@ public class OficinaRRHH {
         int horaSalida = 18; //Hora de salida del trabajo
         List<Autorizacion> autorizacionesValidas = new ArrayList<>();
 
-        for (MarcaReloj marcaje : marcajes) {
-            autorizacion = autorizaciones.get(indexAutorizacion);
-            fechaAutorizacion = new java.sql.Date(autorizacion.getFecha_auth().getTime()).toLocalDate();
-            marca = marcaje;
-            fechaMarcaje = new java.sql.Date(marca.getTiempo().getTime()).toLocalDate();
-            //Se verifica que la fecha del marcaje coincida con la de la autorización
-            if (fechaMarcaje.equals(fechaAutorizacion)) {
-                calendar.setTime(marca.getTiempo());
-                horaMarcaje = calendar.get(Calendar.HOUR_OF_DAY);
-                cantidadHorasExtra = horaMarcaje - horaSalida;
-                //Se verifica que la hora del marcaje sea mayor que la hora de salida del trabajo y
-                //que la cantidad de horas extra detectados del marcaje sea igual a la cantidad de horas aprobadas
-                //DE NO CUMPLIRSE, SE ANULA LA AUTORIZACIÓN POR IRRESPONSABILIDAD DEL EMPLEADO
-                if (horaMarcaje >= horaSalida && cantidadHorasExtra == autorizacion.getHoras_aprobadas()) {
-                    autorizacionesValidas.add(autorizacion); //Se considera como marcaje válido y autorizado
-                    indexAutorizacion++;
+        if (autorizaciones.size() > indexAutorizacion){
+            for (MarcaReloj marcaje : marcajes) {
+                if (autorizaciones.size() > indexAutorizacion){
+                    autorizacion = autorizaciones.get(indexAutorizacion);
+                    fechaAutorizacion = new java.sql.Date(autorizacion.getFecha_auth().getTime()).toLocalDate();
+                    marca = marcaje;
+                    fechaMarcaje = new java.sql.Date(marca.getTiempo().getTime()).toLocalDate();
+                    //Se verifica que la fecha del marcaje coincida con la de la autorización
+                    if (fechaMarcaje.equals(fechaAutorizacion)) {
+                        calendar.setTime(marca.getTiempo());
+                        horaMarcaje = calendar.get(Calendar.HOUR_OF_DAY);
+                        cantidadHorasExtra = horaMarcaje - horaSalida;
+                        //Se verifica que la hora del marcaje sea mayor que la hora de salida del trabajo y
+                        //que la cantidad de horas extra detectados del marcaje sea igual a la cantidad de horas aprobadas
+                        //DE NO CUMPLIRSE, SE ANULA LA AUTORIZACIÓN POR IRRESPONSABILIDAD DEL EMPLEADO
+                        if (horaMarcaje >= horaSalida && cantidadHorasExtra == autorizacion.getHoras_aprobadas()) {
+                            autorizacionesValidas.add(autorizacion); //Se considera como marcaje válido y autorizado
+                            indexAutorizacion++;
+                        }
+                    }
                 }
             }
         }
@@ -135,7 +138,7 @@ public class OficinaRRHH {
         return montoHorasExtra;
     }
 
-    //TODO: Calcula el descuento por los atrasos e inasistencias
+    //Calcula el descuento por los atrasos e inasistencias
     //Aplica de acuerdo a la cantidad de minutos de atraso en el marcaje, y es en referencia al sueldo fijo mensual
     //> 10 min = 1% / > 25 min = 3% / > 45 min = 6% / > 70 min = Se considera inasistencia
     //Para las inasistencias, si no presenta justificativo aplica un descuento del 15% del salario fijo mensual
@@ -152,21 +155,119 @@ public class OficinaRRHH {
         return diasLaborales;
     }
 
-    //Método auxiliar para detectar las inasistencias en el marcaje (es decir, no existe el día en la marca)
+    //Método auxiliar para detectar las inasistencias en el marcaje (es decir, no existe la fecha en sus marcas)
     //La fecha que se entregue corresponde al inicio del periodo mensual para el sueldo
-    public List<MarcaReloj> obtenerMarcajesInexistentes(Empleado empleado, LocalDate inicio){
+    public List<LocalDate> obtenerMarcajesInexistentes(Empleado empleado, List<LocalDate> diasLaborales) {
+        List<LocalDate> diasAusentes = new ArrayList<>();
         List<MarcaReloj> marcajes = empleado.getMarcas_reloj();
-        List<MarcaReloj> marcajesAusentes = new ArrayList<>();
+        //Se obtienen unicamente las fechas de los marcajes
+        List<LocalDate> fechasMarcajes = new ArrayList<>();
+        Date tiempoMarcaje;
+        for (MarcaReloj marca : marcajes) {
+            LocalDate fechaMarcaje = new java.sql.Date(marca.getTiempo().getTime()).toLocalDate();
+            fechasMarcajes.add(fechaMarcaje);
+        }
+        //Se encuentran los dias ausentes a partir de los dias laborales declarados
+        diasAusentes = diasLaborales;
+        diasAusentes.removeAll(fechasMarcajes);
 
-        //TODO: DESARROLLAR MÉTODO
-
-        return marcajesAusentes;
+        return diasAusentes;
     }
 
-    //TODO: Calcula el descuento por cotización previsional
-    //Aplica en referencia al sueldo bruto, y es de un 10%
+    //Método auxiliar para justificar las ausencias entregadas con los justificativos del empleado
+    //Se retornará la lista con las ausencias que no fueron justificadas
+    public List<LocalDate> justificarAusencias(Empleado empleado, List<LocalDate> ausenciasCompletas){
+        List<LocalDate> ausenciasSinJustificar = new ArrayList<>();
+        ausenciasSinJustificar = ausenciasCompletas;
+        List<Justificativo> justificativos = empleado.getJustificativos();
+        int indexAusencias = 0;
+        for (Justificativo justificativo : justificativos){
+            if(ausenciasCompletas.size() > indexAusencias){
+                LocalDate fechaJustificativo = new java.sql.Date(justificativo.getFecha_justi().getTime()).toLocalDate();
+                LocalDate fechaAusencia = ausenciasCompletas.get(indexAusencias);
+                //Se valida el justificativo si es para la fecha correspondiente a su ausencia
+                if (fechaJustificativo.equals(fechaAusencia)){
+                    ausenciasSinJustificar.remove(fechaAusencia);
+                    indexAusencias++;
+                    if (ausenciasSinJustificar.size() == 0) {
+                        break;
+                    }
+                }
+            }
+        }
 
-    //TODO: Calcula el descuento por cotización del plan de salud
+        return ausenciasSinJustificar;
+    }
+
+    public double calcularDescuentoAtrasosInasistencias(Empleado empleado, List<LocalDate> ausenciasCompletas){
+        double montoDescuentoAtrasosInasistencias = 0;
+        double sueldoFijoMensual = calcularSueldoFijoMensual(empleado);
+        //Se aplican los descuentos de las ausencias totales (dia completo) que no fueron justificadas
+        if (!ausenciasCompletas.isEmpty()){
+            for(int i = 0; i < ausenciasCompletas.size();i++){
+                montoDescuentoAtrasosInasistencias = montoDescuentoAtrasosInasistencias + (sueldoFijoMensual * 0.15);
+            }
+        }
+        //Se analizan los marcajes para determinar atrasos y nuevas ausencias
+        List<MarcaReloj> marcajes = empleado.getMarcas_reloj();
+        List<Justificativo> justificativos = empleado.getJustificativos();
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 8);
+        cal.set(Calendar.MINUTE, 0);
+        Date horaEntrada = cal.getTime();
+        long atrasoMs = 0;
+        long atrasoSeg = 0;
+        long atrasoMin = 0;
+        Justificativo justificativo = new Justificativo();
+        for(MarcaReloj marcaje : marcajes){
+            Date origenTiempo = marcaje.getTiempo();
+            cal.setTime(origenTiempo);
+            //Se verifica que el marcaje sea de entrada antes de proceder con el análisis
+            if (cal.get(Calendar.HOUR_OF_DAY) <= 16){ //Una marca antes de las 17 hrs será considerado como entrada
+                Calendar calMarcaje = Calendar.getInstance();
+                calMarcaje.set(Calendar.HOUR_OF_DAY, cal.get(Calendar.HOUR_OF_DAY));
+                calMarcaje.set(Calendar.MINUTE, cal.get(Calendar.MINUTE));
+                Date horaMarcaje = calMarcaje.getTime();
+                atrasoMs = horaMarcaje.getTime() - horaEntrada.getTime();
+                atrasoSeg = atrasoMs / 1000;
+                atrasoMin = atrasoSeg / 60;
+                if (atrasoMin > 70){
+                    //Es una inasistencia, se debe comprobar existencia de justificativo
+                    LocalDate fechaMarcaje = new java.sql.Date(marcaje.getTiempo().getTime()).toLocalDate();
+                    for(Justificativo justiBuscar : justificativos){
+                        LocalDate fechaAValidar = new java.sql.Date(justiBuscar.getFecha_justi().getTime()).toLocalDate();
+                        if (fechaAValidar.equals(fechaMarcaje)){
+                            justificativo = justiBuscar;
+                            break;
+                        }
+                    }
+                    //Si no se consigue el justificativo, se aplica descuento
+                    if(justificativo.getFecha_justi() == null){
+                        montoDescuentoAtrasosInasistencias = montoDescuentoAtrasosInasistencias + (sueldoFijoMensual * 0.15);
+                    }
+                } else if (atrasoMin > 45) {
+                    montoDescuentoAtrasosInasistencias = montoDescuentoAtrasosInasistencias + (sueldoFijoMensual * 0.05);
+                } else if (atrasoMin > 25) {
+                    montoDescuentoAtrasosInasistencias = montoDescuentoAtrasosInasistencias + (sueldoFijoMensual * 0.03);
+                } else if (atrasoMin > 10) {
+                    montoDescuentoAtrasosInasistencias = montoDescuentoAtrasosInasistencias + (sueldoFijoMensual * 0.01);
+                }
+            }
+        }
+
+        return montoDescuentoAtrasosInasistencias;
+    }
+
+    //Calcula el descuento por cotización previsional
+    //Aplica en referencia al sueldo bruto, y es de un 10%
+    public double calcularCotizacionPrevisional(double sueldoBruto){
+        return (sueldoBruto * 0.10);
+    }
+
+    //Calcula el descuento por cotización del plan de salud
     //Aplica en referencia al sueldo bruto, y es de un 8%
+    public double calcularCotizacionSalud(double sueldoBruto){
+        return (sueldoBruto * 0.08);
+    }
 
 }

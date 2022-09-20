@@ -1,10 +1,8 @@
 package com.MueblesStgo.RRHH.CalculadoraSalarios;
 
-import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.Autorizacion;
-import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.Categoria;
-import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.Empleado;
-import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.MarcaReloj;
+import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.*;
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Services.OficinaRRHH;
+import net.bytebuddy.asm.Advice;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -142,25 +140,25 @@ class OficinaRRHHTest {
         Calendar cal = Calendar.getInstance();
         //Marcaje normal, deberia ser descartado
         MarcaReloj marcaReloj1 = new MarcaReloj();
-        cal.set(2022, 9, 1, 18,0);
+        cal.set(2022, Calendar.SEPTEMBER, 1, 18,0);
         Date marca = cal.getTime();
         marcaReloj1.setTiempo(marca);
         marcajes.add(marcaReloj1);
         //Marcaje con la hora extra autorizada, en la fecha correcta. Debe considerarse
         MarcaReloj marcaReloj2 = new MarcaReloj();
-        cal.set(2022,9,2,19,0);
+        cal.set(2022,Calendar.SEPTEMBER,2,19,0);
         marca = cal.getTime();
         marcaReloj2.setTiempo(marca);
         marcajes.add(marcaReloj2);
         //Marcaje con la hora extra autorizada, pero marcó demasiado tarde asi que se descarta
         MarcaReloj marcaReloj3 = new MarcaReloj();
-        cal.set(2022,9,3,20,0);
+        cal.set(2022,Calendar.SEPTEMBER,3,20,0);
         marca = cal.getTime();
         marcaReloj3.setTiempo(marca);
         marcajes.add(marcaReloj3);
         //Marcaje con una hora extra sin autorizar, en la fecha incorrecta. Deberia ser descartado
         MarcaReloj marcaReloj4 = new MarcaReloj();
-        cal.set(2022,9,4,19,0);
+        cal.set(2022,Calendar.SEPTEMBER,4,19,0);
         marca = cal.getTime();
         marcaReloj4.setTiempo(marca);
         marcajes.add(marcaReloj4);
@@ -169,14 +167,14 @@ class OficinaRRHHTest {
         List<Autorizacion> autorizaciones = new ArrayList<>();
         //Autorización validada con marcaje correcto
         Autorizacion autorizacion1 = new Autorizacion();
-        cal.set(2022,9,2);
+        cal.set(2022,Calendar.SEPTEMBER,2);
         Date diaAutorizacion = cal.getTime();
         autorizacion1.setFecha_auth(diaAutorizacion);
         autorizacion1.setHoras_aprobadas(1);
         autorizaciones.add(autorizacion1);
         //Autorización no validada por marcaje demasiado tarde
         Autorizacion autorizacion2 = new Autorizacion();
-        cal.set(2022,9,3);
+        cal.set(2022,Calendar.SEPTEMBER,3);
         diaAutorizacion = cal.getTime();
         autorizacion2.setFecha_auth(diaAutorizacion);
         autorizacion2.setHoras_aprobadas(1);
@@ -202,17 +200,369 @@ class OficinaRRHHTest {
     @Test
     void obtenerDiasLaborales(){
         LocalDate inicio = LocalDate.of(2022,9,5);
-        LocalDate fin = LocalDate.of(2022,9,11);
+        LocalDate fin = LocalDate.of(2022,9,12);
 
         List<LocalDate> diasLaborales = inicio.datesUntil(LocalDate.of(2022,9,10))
                 .collect(Collectors.toList());
 
+        diasLaborales.add(LocalDate.of(2022,9,12));
+
         List<LocalDate> diasObtenidos = oficinaRRHH.obtenerDiasLaborales(inicio, fin);
 
-        System.out.println(diasLaborales);
-        System.out.println(diasObtenidos);
-
         assertEquals(diasLaborales,diasObtenidos);
+    }
+
+    @Test
+    void detectarDiasAusentes(){
+        //Setup marcajes empleado
+        List<MarcaReloj> marcajes = new ArrayList<>();
+        Calendar cal = Calendar.getInstance();
+
+        MarcaReloj marcaReloj1 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 5);
+        Date marca = cal.getTime();
+        marcaReloj1.setTiempo(marca);
+        marcajes.add(marcaReloj1);
+
+        MarcaReloj marcaReloj2 = new MarcaReloj();
+        cal.set(2022,Calendar.SEPTEMBER,6);
+        marca = cal.getTime();
+        marcaReloj2.setTiempo(marca);
+        marcajes.add(marcaReloj2);
+
+        MarcaReloj marcaReloj3 = new MarcaReloj();
+        cal.set(2022,Calendar.SEPTEMBER,8);
+        marca = cal.getTime();
+        marcaReloj3.setTiempo(marca);
+        marcajes.add(marcaReloj3);
+
+        MarcaReloj marcaReloj4 = new MarcaReloj();
+        cal.set(2022,Calendar.SEPTEMBER,9);
+        marca = cal.getTime();
+        marcaReloj4.setTiempo(marca);
+        marcajes.add(marcaReloj4);
+        //Setup empleado
+        empleado.setCategoria(categoria);
+        empleado.setMarcas_reloj(marcajes);
+        //Setup periodo de tiempo
+        LocalDate inicio = LocalDate.of(2022,9,5);
+        LocalDate fin = LocalDate.of(2022,9,9);
+        List<LocalDate> diasLaborales = oficinaRRHH.obtenerDiasLaborales(inicio, fin);
+
+        List<LocalDate> marcajesInexistentes = oficinaRRHH.obtenerMarcajesInexistentes(empleado, diasLaborales);
+        List<LocalDate> respuesta = new ArrayList<>();
+        respuesta.add(LocalDate.of(2022,9,7));
+
+        assertEquals(respuesta, marcajesInexistentes);
+    }
+
+    @Test
+    void todasLasAusenciasJustificadas(){
+        //Setup marcajes empleado
+        List<MarcaReloj> marcajes = new ArrayList<>();
+        Calendar cal = Calendar.getInstance();
+
+        MarcaReloj marcaReloj1 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 5);
+        Date marca = cal.getTime();
+        marcaReloj1.setTiempo(marca);
+        marcajes.add(marcaReloj1);
+
+        MarcaReloj marcaReloj2 = new MarcaReloj();
+        cal.set(2022,Calendar.SEPTEMBER,6);
+        marca = cal.getTime();
+        marcaReloj2.setTiempo(marca);
+        marcajes.add(marcaReloj2);
+
+        MarcaReloj marcaReloj3 = new MarcaReloj();
+        cal.set(2022,Calendar.SEPTEMBER,8);
+        marca = cal.getTime();
+        marcaReloj3.setTiempo(marca);
+        marcajes.add(marcaReloj3);
+
+        MarcaReloj marcaReloj4 = new MarcaReloj();
+        cal.set(2022,Calendar.SEPTEMBER,9);
+        marca = cal.getTime();
+        marcaReloj4.setTiempo(marca);
+        marcajes.add(marcaReloj4);
+
+        //Setup justificativo
+        Justificativo justificativo1 = new Justificativo();
+        cal.set(2022,Calendar.SEPTEMBER,7);
+        Date diaJustificativo = cal.getTime();
+        justificativo1.setFecha_justi(diaJustificativo);
+        List<Justificativo> justificativos = new ArrayList<>();
+        justificativos.add(justificativo1);
+
+        //Setup empleado
+        empleado.setCategoria(categoria);
+        empleado.setMarcas_reloj(marcajes);
+        empleado.setJustificativos(justificativos);
+
+        //Setup periodo de tiempo
+        LocalDate inicio = LocalDate.of(2022,9,5);
+        LocalDate fin = LocalDate.of(2022,9,9);
+        List<LocalDate> diasLaborales = oficinaRRHH.obtenerDiasLaborales(inicio, fin);
+
+        List<LocalDate> marcajesInexistentes = oficinaRRHH.obtenerMarcajesInexistentes(empleado, diasLaborales);
+        List<LocalDate> ausenciasSinJustificar = oficinaRRHH.justificarAusencias(empleado,marcajesInexistentes);
+        List<LocalDate> respuesta = new ArrayList<>();
+
+        assertEquals(respuesta, ausenciasSinJustificar);
+    }
+
+    @Test
+    void unaAusenciaSinJustificar(){
+        //Setup marcajes empleado
+        List<MarcaReloj> marcajes = new ArrayList<>();
+        Calendar cal = Calendar.getInstance();
+
+        MarcaReloj marcaReloj1 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 5);
+        Date marca = cal.getTime();
+        marcaReloj1.setTiempo(marca);
+        marcajes.add(marcaReloj1);
+
+        MarcaReloj marcaReloj2 = new MarcaReloj();
+        cal.set(2022,Calendar.SEPTEMBER,6);
+        marca = cal.getTime();
+        marcaReloj2.setTiempo(marca);
+        marcajes.add(marcaReloj2);
+
+        MarcaReloj marcaReloj3 = new MarcaReloj();
+        cal.set(2022,Calendar.SEPTEMBER,8);
+        marca = cal.getTime();
+        marcaReloj3.setTiempo(marca);
+        marcajes.add(marcaReloj3);
+
+        MarcaReloj marcaReloj4 = new MarcaReloj();
+        cal.set(2022,Calendar.SEPTEMBER,9);
+        marca = cal.getTime();
+        marcaReloj4.setTiempo(marca);
+        marcajes.add(marcaReloj4);
+
+        //Setup justificativo
+        List<Justificativo> justificativos = new ArrayList<>();
+
+        //Setup empleado
+        empleado.setCategoria(categoria);
+        empleado.setMarcas_reloj(marcajes);
+        empleado.setJustificativos(justificativos);
+
+        //Setup periodo de tiempo
+        LocalDate inicio = LocalDate.of(2022,9,5);
+        LocalDate fin = LocalDate.of(2022,9,9);
+        List<LocalDate> diasLaborales = oficinaRRHH.obtenerDiasLaborales(inicio, fin);
+
+        List<LocalDate> marcajesInexistentes = oficinaRRHH.obtenerMarcajesInexistentes(empleado, diasLaborales);
+        List<LocalDate> ausenciasSinJustificar = oficinaRRHH.justificarAusencias(empleado,marcajesInexistentes);
+        List<LocalDate> respuesta = new ArrayList<>();
+        respuesta.add(LocalDate.of(2022,9,7));
+
+        assertEquals(respuesta, ausenciasSinJustificar);
+    }
+
+    @Test
+    void montoDescuentoAtrasosAusenciasSinJustificar70min() {
+        //Setup marcajes empleado
+        List<MarcaReloj> marcajes = new ArrayList<>();
+        Calendar cal = Calendar.getInstance();
+        //Marcaje sin atraso
+        MarcaReloj marcaReloj1 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 5, 8, 0);
+        Date marca = cal.getTime();
+        marcaReloj1.setTiempo(marca);
+        marcajes.add(marcaReloj1);
+        //Marcaje con > 10 min de atraso
+        MarcaReloj marcaReloj2 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 6, 8, 12);
+        marca = cal.getTime();
+        marcaReloj2.setTiempo(marca);
+        marcajes.add(marcaReloj2);
+        //Marcaje con > 25 min de atraso
+        MarcaReloj marcaReloj3 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 8, 8, 30);
+        marca = cal.getTime();
+        marcaReloj3.setTiempo(marca);
+        marcajes.add(marcaReloj3);
+        //Marcaje con > 45 min de atraso
+        MarcaReloj marcaReloj4 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 9, 8, 50);
+        marca = cal.getTime();
+        marcaReloj4.setTiempo(marca);
+        marcajes.add(marcaReloj4);
+        //Marcaje con > 70 min de atraso
+        MarcaReloj marcaReloj5 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 12, 9, 30);
+        marca = cal.getTime();
+        marcaReloj5.setTiempo(marca);
+        marcajes.add(marcaReloj5);
+
+        //Setup justificativos
+        List<Justificativo> justificativos = new ArrayList<>();
+
+        //Setup empleado
+        categoria.setLetra('C');
+        empleado.setCategoria(categoria);
+        empleado.setMarcas_reloj(marcajes);
+        empleado.setJustificativos(justificativos);
+
+        //Setup periodo de tiempo
+        LocalDate inicio = LocalDate.of(2022,9,5);
+        LocalDate fin = LocalDate.of(2022,9,12);
+        List<LocalDate> diasLaborales = oficinaRRHH.obtenerDiasLaborales(inicio, fin);
+
+        List<LocalDate> marcajesInexistentes = oficinaRRHH.obtenerMarcajesInexistentes(empleado, diasLaborales);
+        List<LocalDate> ausenciasSinJustificar = oficinaRRHH.justificarAusencias(empleado,marcajesInexistentes);
+        double montoObtenido = oficinaRRHH.calcularDescuentoAtrasosInasistencias(empleado, ausenciasSinJustificar);
+
+        assertEquals(312000,montoObtenido);
+
+    }
+
+    @Test
+    void montoDescuentoAtrasosAusenciasJustificandoSoloAusenciaTotal() {
+        //Setup marcajes empleado
+        List<MarcaReloj> marcajes = new ArrayList<>();
+        Calendar cal = Calendar.getInstance();
+        //Marcaje sin atraso
+        MarcaReloj marcaReloj1 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 5, 8, 0);
+        Date marca = cal.getTime();
+        marcaReloj1.setTiempo(marca);
+        marcajes.add(marcaReloj1);
+        //Marcaje con > 10 min de atraso
+        MarcaReloj marcaReloj2 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 6, 8, 12);
+        marca = cal.getTime();
+        marcaReloj2.setTiempo(marca);
+        marcajes.add(marcaReloj2);
+        //Marcaje con > 25 min de atraso
+        MarcaReloj marcaReloj3 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 8, 8, 30);
+        marca = cal.getTime();
+        marcaReloj3.setTiempo(marca);
+        marcajes.add(marcaReloj3);
+        //Marcaje con > 45 min de atraso
+        MarcaReloj marcaReloj4 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 9, 8, 50);
+        marca = cal.getTime();
+        marcaReloj4.setTiempo(marca);
+        marcajes.add(marcaReloj4);
+        //Marcaje con > 70 min de atraso
+        MarcaReloj marcaReloj5 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 12, 9, 30);
+        marca = cal.getTime();
+        marcaReloj5.setTiempo(marca);
+        marcajes.add(marcaReloj5);
+
+        //Setup justificativos
+        List<Justificativo> justificativos = new ArrayList<>();
+        Justificativo justificativo1 = new Justificativo();
+        cal.set(2022,Calendar.SEPTEMBER,7);
+        Date diaJustificativo = cal.getTime();
+        justificativo1.setFecha_justi(diaJustificativo);
+        justificativos.add(justificativo1);
+
+        //Setup empleado
+        categoria.setLetra('C');
+        empleado.setCategoria(categoria);
+        empleado.setMarcas_reloj(marcajes);
+        empleado.setJustificativos(justificativos);
+
+        //Setup periodo de tiempo
+        LocalDate inicio = LocalDate.of(2022,9,5);
+        LocalDate fin = LocalDate.of(2022,9,12);
+        List<LocalDate> diasLaborales = oficinaRRHH.obtenerDiasLaborales(inicio, fin);
+
+        List<LocalDate> marcajesInexistentes = oficinaRRHH.obtenerMarcajesInexistentes(empleado, diasLaborales);
+        List<LocalDate> ausenciasSinJustificar = oficinaRRHH.justificarAusencias(empleado,marcajesInexistentes);
+        double montoObtenido = oficinaRRHH.calcularDescuentoAtrasosInasistencias(empleado, ausenciasSinJustificar);
+
+        assertEquals(192000,montoObtenido);
+
+    }
+
+    @Test
+    void montoDescuentoAtrasosAusenciasJustificandoTodo() {
+        //Setup marcajes empleado
+        List<MarcaReloj> marcajes = new ArrayList<>();
+        Calendar cal = Calendar.getInstance();
+        //Marcaje sin atraso
+        MarcaReloj marcaReloj1 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 5, 8, 0);
+        Date marca = cal.getTime();
+        marcaReloj1.setTiempo(marca);
+        marcajes.add(marcaReloj1);
+        //Marcaje con > 10 min de atraso
+        MarcaReloj marcaReloj2 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 6, 8, 12);
+        marca = cal.getTime();
+        marcaReloj2.setTiempo(marca);
+        marcajes.add(marcaReloj2);
+        //Marcaje con > 25 min de atraso
+        MarcaReloj marcaReloj3 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 8, 8, 30);
+        marca = cal.getTime();
+        marcaReloj3.setTiempo(marca);
+        marcajes.add(marcaReloj3);
+        //Marcaje con > 45 min de atraso
+        MarcaReloj marcaReloj4 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 9, 8, 50);
+        marca = cal.getTime();
+        marcaReloj4.setTiempo(marca);
+        marcajes.add(marcaReloj4);
+        //Marcaje con > 70 min de atraso
+        MarcaReloj marcaReloj5 = new MarcaReloj();
+        cal.set(2022, Calendar.SEPTEMBER, 12, 9, 30);
+        marca = cal.getTime();
+        marcaReloj5.setTiempo(marca);
+        marcajes.add(marcaReloj5);
+
+        //Setup justificativos
+        List<Justificativo> justificativos = new ArrayList<>();
+        Justificativo justificativo1 = new Justificativo();
+        cal.set(2022,Calendar.SEPTEMBER,7);
+        Date diaJustificativo = cal.getTime();
+        justificativo1.setFecha_justi(diaJustificativo);
+        justificativos.add(justificativo1);
+        Justificativo justificativo2 = new Justificativo();
+        cal.set(2022,Calendar.SEPTEMBER,12);
+        diaJustificativo = cal.getTime();
+        justificativo2.setFecha_justi(diaJustificativo);
+        justificativos.add(justificativo2);
+
+        //Setup empleado
+        categoria.setLetra('C');
+        empleado.setCategoria(categoria);
+        empleado.setMarcas_reloj(marcajes);
+        empleado.setJustificativos(justificativos);
+
+        //Setup periodo de tiempo
+        LocalDate inicio = LocalDate.of(2022,9,5);
+        LocalDate fin = LocalDate.of(2022,9,12);
+        List<LocalDate> diasLaborales = oficinaRRHH.obtenerDiasLaborales(inicio, fin);
+
+        List<LocalDate> marcajesInexistentes = oficinaRRHH.obtenerMarcajesInexistentes(empleado, diasLaborales);
+        List<LocalDate> ausenciasSinJustificar = oficinaRRHH.justificarAusencias(empleado,marcajesInexistentes);
+        double montoObtenido = oficinaRRHH.calcularDescuentoAtrasosInasistencias(empleado, ausenciasSinJustificar);
+
+        assertEquals(72000,montoObtenido);
+
+    }
+
+    @Test
+    void cotizacionPrevisional(){
+        double montoObtenido = oficinaRRHH.calcularCotizacionPrevisional(800000);
+
+        assertEquals(80000, montoObtenido);
+    }
+
+    @Test
+    void cotizacionSalud(){
+        double montoObtenido = oficinaRRHH.calcularCotizacionSalud(800000);
+
+        assertEquals(64000, montoObtenido);
     }
 
 }
