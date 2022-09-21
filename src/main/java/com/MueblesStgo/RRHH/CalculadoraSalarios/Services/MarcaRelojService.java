@@ -21,6 +21,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import static org.hibernate.tool.schema.SchemaToolingLogging.LOGGER;
+
 @Service
 public class MarcaRelojService {
     @Autowired
@@ -54,10 +56,11 @@ public class MarcaRelojService {
         String rut = null;
         SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy/MM/dd HH:mm");
 
-        try{
-            BufferedReader reader = new BufferedReader(new FileReader("marcajes/DATA.TXT"));
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader("marcajes/DATA.TXT"));
             String line;
-            while((line = reader.readLine()) != null) { //Mientras siga habiendo marcajes por ingresar
+            while ((line = reader.readLine()) != null) { //Mientras siga habiendo marcajes por ingresar
                 //Lectura de la línea y trabajo de reconocimiento de datos
                 String[] lineaDividida = line.split(";");
                 String fechaStr = lineaDividida[0] + " " + lineaDividida[1];
@@ -72,10 +75,18 @@ public class MarcaRelojService {
             }
             reader.close();
 
-        }catch (IOException e){
-            e.printStackTrace();
+        } catch (IOException e) {
+            LOGGER.log(org.jboss.logging.Logger.Level.valueOf("context"), e);
         } catch (ParseException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (reader != null){
+                try{
+                    reader.close();
+                } catch (IOException e){
+                    LOGGER.log(org.jboss.logging.Logger.Level.valueOf("context"), e);
+                }
+            }
         }
     }
 
