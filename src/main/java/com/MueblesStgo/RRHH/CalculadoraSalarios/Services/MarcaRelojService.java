@@ -50,15 +50,13 @@ public class MarcaRelojService {
     public void borrarMarcas(){
         marcaRelojRepository.deleteAll();
     }
-    public void readData(){
+    public void readData() {
         Empleado empleado;
         Date tiempo = null;
         String rut = null;
         SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy/MM/dd HH:mm");
 
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new FileReader("marcajes/DATA.TXT"));
+        try (BufferedReader reader = new BufferedReader(new FileReader("marcajes/DATA.TXT"))) {
             String line;
             while ((line = reader.readLine()) != null) { //Mientras siga habiendo marcajes por ingresar
                 //Lectura de la línea y trabajo de reconocimiento de datos
@@ -73,20 +71,10 @@ public class MarcaRelojService {
                 marca.setEmpleado(empleado);
                 marcaRelojRepository.save(marca);
             }
-            reader.close();
-
         } catch (IOException e) {
-            LOGGER.log(org.jboss.logging.Logger.Level.valueOf("context"), e);
+            LOGGER.errorv("***** ERROR DE APERTURA DE ARCHIVO *****", (Object) new String[]{e.getMessage()});
         } catch (ParseException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (reader != null){
-                try{
-                    reader.close();
-                } catch (IOException e){
-                    LOGGER.log(org.jboss.logging.Logger.Level.valueOf("context"), e);
-                }
-            }
+            LOGGER.errorv("***** ERROR DE FORMATO DE FECHA EN MARCAJES *****", (Object) new String[]{e.getMessage()});
         }
     }
 
