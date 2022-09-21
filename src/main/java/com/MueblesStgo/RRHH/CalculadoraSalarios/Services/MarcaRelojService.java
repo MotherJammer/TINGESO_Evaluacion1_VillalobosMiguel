@@ -41,7 +41,7 @@ public class MarcaRelojService {
 
                 logg.info("Archivo guardado");
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                LOGGER.errorv("***** ERROR DE SUBIDA DE ARCHIVO *****", (Object) new String[]{e.getMessage()});
             }
         }
         return "El archivo de marcajes ha sido ingresado satisfactoriamente";
