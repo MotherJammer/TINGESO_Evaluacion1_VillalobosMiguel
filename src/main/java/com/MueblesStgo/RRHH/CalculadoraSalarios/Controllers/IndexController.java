@@ -2,6 +2,8 @@ package com.MueblesStgo.RRHH.CalculadoraSalarios.Controllers;
 
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.Autorizacion;
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.Justificativo;
+import com.MueblesStgo.RRHH.CalculadoraSalarios.Services.MarcaRelojService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,8 +13,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping
 public class IndexController {
 
+    @Autowired
+    MarcaRelojService marcaRelojService;
+
     @GetMapping("/")
     public String home() {
+        marcaRelojService.borrarMarcas();
         return "cargaMarcaje";
     }
 

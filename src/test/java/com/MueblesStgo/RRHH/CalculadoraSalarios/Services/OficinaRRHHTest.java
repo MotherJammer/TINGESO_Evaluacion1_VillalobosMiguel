@@ -1,4 +1,4 @@
-package com.MueblesStgo.RRHH.CalculadoraSalarios;
+package com.MueblesStgo.RRHH.CalculadoraSalarios.Services;
 
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.*;
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Services.OficinaRRHH;

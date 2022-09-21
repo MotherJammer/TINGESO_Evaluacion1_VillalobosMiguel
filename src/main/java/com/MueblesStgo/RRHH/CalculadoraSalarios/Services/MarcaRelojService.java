@@ -44,6 +44,10 @@ public class MarcaRelojService {
         }
         return "El archivo de marcajes ha sido ingresado satisfactoriamente";
     }
+
+    public void borrarMarcas(){
+        marcaRelojRepository.deleteAll();
+    }
     public void readData(){
         Empleado empleado;
         Date tiempo = null;

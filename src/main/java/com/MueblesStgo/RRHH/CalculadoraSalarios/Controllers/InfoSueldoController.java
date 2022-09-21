@@ -47,6 +47,7 @@ public class InfoSueldoController {
             //---Información del empleado---
             sueldo.setRut(empleado.getRut());
             sueldo.setApellidos(empleado.getApellidos());
+            System.out.println("Calculando sueldo para el empleado de apellido " + empleado.getApellidos());
             sueldo.setNombre(empleado.getNombre());
             sueldo.setCategoria(empleado.getCategoria().getLetra());
 

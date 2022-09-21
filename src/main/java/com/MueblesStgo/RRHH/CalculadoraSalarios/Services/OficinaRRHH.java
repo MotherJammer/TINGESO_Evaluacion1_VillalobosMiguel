@@ -205,6 +205,7 @@ public class OficinaRRHH {
         //Se aplican los descuentos de las ausencias totales (dia completo) que no fueron justificadas
         if (!ausenciasCompletas.isEmpty()){
             for(int i = 0; i < ausenciasCompletas.size();i++){
+                System.out.println("Se ha aplicado descuento por inasistencia");
                 montoDescuentoAtrasosInasistencias = montoDescuentoAtrasosInasistencias + (sueldoFijoMensual * 0.15);
             }
         }
@@ -233,23 +234,36 @@ public class OficinaRRHH {
                 atrasoMin = atrasoSeg / 60;
                 if (atrasoMin > 70){
                     //Es una inasistencia, se debe comprobar existencia de justificativo
+                    System.out.println("Se ha detectado un atraso");
+                    System.out.println("Es de la marca " + horaMarcaje);
                     LocalDate fechaMarcaje = new java.sql.Date(marcaje.getTiempo().getTime()).toLocalDate();
                     for(Justificativo justiBuscar : justificativos){
                         LocalDate fechaAValidar = new java.sql.Date(justiBuscar.getFecha_justi().getTime()).toLocalDate();
                         if (fechaAValidar.equals(fechaMarcaje)){
+                            System.out.println("Se ha justificado el atraso >70");
                             justificativo = justiBuscar;
                             break;
                         }
                     }
                     //Si no se consigue el justificativo, se aplica descuento
                     if(justificativo.getFecha_justi() == null){
+                        System.out.println("Se ha aplicado descuento por atraso >70");
                         montoDescuentoAtrasosInasistencias = montoDescuentoAtrasosInasistencias + (sueldoFijoMensual * 0.15);
                     }
                 } else if (atrasoMin > 45) {
+                    System.out.println("Se ha detectado un atraso");
+                    System.out.println("Es de la marca " + horaMarcaje);
+                    System.out.println("Se ha aplicado descuento por atraso >45");
                     montoDescuentoAtrasosInasistencias = montoDescuentoAtrasosInasistencias + (sueldoFijoMensual * 0.05);
                 } else if (atrasoMin > 25) {
+                    System.out.println("Se ha detectado un atraso");
+                    System.out.println("Es de la marca " + horaMarcaje);
+                    System.out.println("Se ha aplicado descuento por atraso >25");
                     montoDescuentoAtrasosInasistencias = montoDescuentoAtrasosInasistencias + (sueldoFijoMensual * 0.03);
                 } else if (atrasoMin > 10) {
+                    System.out.println("Se ha detectado un atraso");
+                    System.out.println("Es de la marca " + horaMarcaje);
+                    System.out.println("Se ha aplicado descuento por atraso >10");
                     montoDescuentoAtrasosInasistencias = montoDescuentoAtrasosInasistencias + (sueldoFijoMensual * 0.01);
                 }
             }
