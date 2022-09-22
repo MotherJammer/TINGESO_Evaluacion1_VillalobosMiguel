@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  mysql-db:
+    image: mysql
+    restart: always
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mueblesstgo
+    ports:
+      - 33061:3306
+  cs-mueblesstgo:
+    container_name: cs-mueblesstgo
+    image: motherjammer/cs-mueblesstgo
+    ports:
+      - 8081:8081
+    volumes:
+      - marcajes:/marcajes
+    environment:
+      - DB_URL=jdbc:mysql://mysql-db:3306/mueblesstgo?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+    deploy:
+      restart_policy:
+        condition: on-failure
+    depends_on:
+      - mysql-db
+volumes:
+  marcajes:
+  mysql-data:
