@@ -33,5 +33,15 @@ dependencies {
 }
 
 tasks.named('test') {
+	environment "DB_URL", "jdbc:mysql://localhost:3306/mueblestgo"
+	environment "DB_USERNAME", "root"
+	environment "DB_PASSWORD", "Mastercat&07"
 	useJUnitPlatform()
+}
+
+
+bootRun{
+	environment("DB_URL", "jdbc:mysql://localhost:3306/mueblestgo")
+	environment("DB_USERNAME", "root")
+	environment("DB_PASSWORD", "Mastercat&07")
 }

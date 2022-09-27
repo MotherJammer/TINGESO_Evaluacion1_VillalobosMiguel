@@ -3,7 +3,10 @@ package com.MueblesStgo.RRHH.CalculadoraSalarios.Services;
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Entities.*;
 import com.MueblesStgo.RRHH.CalculadoraSalarios.Services.OficinaRRHH;
 import net.bytebuddy.asm.Advice;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.text.ParseException;
@@ -20,7 +23,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 class OficinaRRHHTest {
 
-	OficinaRRHH oficinaRRHH = new OficinaRRHH();
+    @InjectMocks
+    private OficinaRRHH oficinaRRHH;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
     Empleado empleado = new Empleado();
     Categoria categoria = new Categoria();
 
